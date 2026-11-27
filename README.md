@@ -6,18 +6,18 @@ course's incident API. Read `plan.md` first, then the four ready issues in `issu
 ## Run it
 
 1. Deploy `worker/` with Wrangler and set its `CHALLENGE_SESSION` secret from the private challenge receipt.
-2. Set the GitHub Actions repository variable `API_BASE` to the deployed Worker URL.
+2. Set the GitHub Actions repository variable `API_BASE` to the deployed Worker URL plus `/api`.
 3. Serve `app/` with any static server: `npm run serve`.
 4. Deploy `app/` to the public GitHub Pages address. The session stays in the Worker secret, not in the page.
 
 ## The incident API
 
-The Worker proxies the course API; `api.js` keeps the latest cursor for ack calls.
+`<api>` is the Worker URL ending in `/api`. The Worker adds the private session before it calls the course API; `api.js` keeps the latest cursor for ack calls.
 
 | call | answers |
 |------|---------|
-| `GET <api>/incidents?t=<session>[&since=<cursor>]` | `{ updatedAt, incidents: [{ id, service, region, summary, severity, openedAt }], cursor }` — newest first |
-| `GET <api>/ack?t=<session>&id=<incident id>&cursor=<latest cursor>` | `{ id, ackedAt, receipt }` |
+| `GET <api>/incidents[?since=<cursor>]` | `{ updatedAt, incidents: [{ id, service, region, summary, severity, openedAt }], cursor }` — newest first |
+| `GET <api>/ack?id=<incident id>&cursor=<latest cursor>` | `{ id, ackedAt, receipt }` |
 
 Every ack answers with a sealed **receipt** (opaque: the course reads it, you quote it). `api.js`
 keeps them in `acks` and logs each one to the console.

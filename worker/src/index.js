@@ -21,11 +21,12 @@ export default {
     if (request.method !== 'GET') return new Response('method not allowed', { status: 405, headers });
 
     const incoming = new URL(request.url);
-    if (!['/incidents', '/ack'].includes(incoming.pathname)) {
+    const path = incoming.pathname.replace(/^\/api(?=\/)/, '');
+    if (!['/incidents', '/ack'].includes(path)) {
       return new Response('not found', { status: 404, headers });
     }
 
-    const upstream = new URL(`${UPSTREAM}${incoming.pathname}`);
+    const upstream = new URL(`${UPSTREAM}${path}`);
     upstream.searchParams.set('t', env.CHALLENGE_SESSION);
     for (const key of ['since', 'id', 'cursor']) {
       const value = incoming.searchParams.get(key);

@@ -4,54 +4,80 @@ const list = document.querySelector('[data-testid="incident-list"]');
 const loader = document.querySelector('[data-testid="loader"]');
 const empty = document.querySelector('[data-testid="empty"]');
 const incidents = new Map();
+const rowElements = new Map();
 const acked = new Set();
+const timeFormatter = new Intl.DateTimeFormat(undefined, {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+function createRow() {
+  const row = document.createElement('li');
+  row.dataset.testid = 'incident-row';
+  const id = document.createElement('span');
+  id.className = 'id';
+  const severity = document.createElement('span');
+  severity.className = 'sev';
+  const summary = document.createElement('span');
+  summary.className = 'what';
+  const time = document.createElement('time');
+  row.append(id, severity, summary, time);
+  return row;
+}
+
+function updateRow(row, incident) {
+  row.dataset.id = incident.id;
+  row.dataset.openedAt = incident.openedAt;
+  row.className = `row ${incident.severity}`;
+  row.querySelector('.id').textContent = incident.id;
+  row.querySelector('.sev').textContent = incident.severity;
+  row.querySelector('.what').textContent = `${incident.service} · ${incident.region} · ${incident.summary}`;
+  const time = row.querySelector('time');
+  time.dateTime = incident.openedAt;
+  time.textContent = timeFormatter.format(new Date(incident.openedAt));
+
+  const button = row.querySelector('[data-testid="ack"]');
+  const mark = row.querySelector('[data-testid="acked"]');
+  if (acked.has(incident.id)) {
+    button?.remove();
+    if (!mark) {
+      const ackedMark = document.createElement('span');
+      ackedMark.dataset.testid = 'acked';
+      ackedMark.textContent = 'Acked';
+      row.append(ackedMark);
+    }
+  } else {
+    mark?.remove();
+    if (!button) {
+      const ackButton = document.createElement('button');
+      ackButton.dataset.testid = 'ack';
+      ackButton.type = 'button';
+      ackButton.textContent = 'Ack';
+      row.append(ackButton);
+    }
+  }
+}
 
 function render() {
   const rows = [...incidents.values()].sort(
     (a, b) => new Date(b.openedAt) - new Date(a.openedAt),
   );
-  list.replaceChildren();
   empty.hidden = rows.length > 0;
 
   for (const incident of rows) {
-    const row = document.createElement('li');
-    row.dataset.testid = 'incident-row';
-    row.dataset.id = incident.id;
-    row.className = `row ${incident.severity}`;
-
-    const id = document.createElement('span');
-    id.className = 'id';
-    id.textContent = incident.id;
-    const severity = document.createElement('span');
-    severity.className = 'sev';
-    severity.textContent = incident.severity;
-    const summary = document.createElement('span');
-    summary.className = 'what';
-    summary.textContent = `${incident.service} · ${incident.region} · ${incident.summary}`;
-    const time = document.createElement('time');
-    time.dateTime = incident.openedAt;
-    time.textContent = new Intl.DateTimeFormat(undefined, {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(incident.openedAt));
-
-    row.append(id, severity, summary, time);
-    if (acked.has(incident.id)) {
-      const mark = document.createElement('span');
-      mark.dataset.testid = 'acked';
-      mark.textContent = 'Acked';
-      row.append(mark);
-    } else {
-      const button = document.createElement('button');
-      button.dataset.testid = 'ack';
-      button.type = 'button';
-      button.textContent = 'Ack';
-      row.append(button);
+    let row = rowElements.get(incident.id);
+    if (!row) {
+      row = createRow();
+      rowElements.set(incident.id, row);
+      const before = [...list.children].find(
+        (existing) => new Date(existing.dataset.openedAt) < new Date(incident.openedAt),
+      );
+      list.insertBefore(row, before ?? null);
     }
-    list.append(row);
+    updateRow(row, incident);
   }
 }
 
