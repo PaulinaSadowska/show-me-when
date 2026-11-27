@@ -33,6 +33,12 @@ what just broke and takes it.
 | `acked` | the acked mark in a row |
 | `build-sha` | the sha in the footer |
 
+## Product follow-up — 2026-11-27
+
+- Keep new incidents live at the top and keep Ack on each row.
+- Before sending Ack, ask for confirmation whose text names the incident ID; canceling must not send an Ack.
+- A native `window.confirm()` is acceptable instead of adding confirmation test hooks.
+
 ## Done
 
-Every issue in `issues/` delivered, deployed to a public https address, and shown working.
+Every issue in `issues/` and the Product follow-up delivered, deployed to a public https address, and shown working.

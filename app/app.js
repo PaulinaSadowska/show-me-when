@@ -59,10 +59,12 @@ list.addEventListener('click', async (event) => {
   const button = event.target.closest('[data-testid="ack"]');
   if (!button) return;
   const row = button.closest('[data-testid="incident-row"]');
+  const incidentId = row.dataset.id;
+  if (!window.confirm(`Acknowledge incident ${incidentId}?`)) return;
   button.disabled = true;
   try {
-    await ack(row.dataset.id);
-    acked.add(row.dataset.id);
+    await ack(incidentId);
+    acked.add(incidentId);
     render();
   } catch (error) {
     button.disabled = false;
