@@ -1,0 +1,7 @@
+name = "show-me-when-proxy"
+main = "src/index.js"
+compatibility_date = "2026-11-27"
+workers_dev = true
+
+[vars]
+BOARD_ORIGIN = "https://paulinasadowska.github.io"
