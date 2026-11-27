@@ -26,11 +26,12 @@ jobs:
       - name: Build static board
         env:
           API_BASE: ${{ vars.API_BASE }}
-          BUILD_SHA: ${{ github.sha }}
         run: |
           test -n "$API_BASE"
+          export BUILD_SHA="$(git log -1 --format=%H -- app)"
           mkdir dist
           cp -R app/. dist/
+          if [ -d recordings ]; then cp -R recordings dist/recordings; fi
           python3 - <<'PY'
           import json, os
           from pathlib import Path
